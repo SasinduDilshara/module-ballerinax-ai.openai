@@ -32,6 +32,13 @@ final string:RegExp FINAL_ANSWER_REGEX = re `^final.?answer`;
 
 isolated function isToolCallSupported(OPEN_AI_MODEL_NAMES model) returns boolean => model != CHATGPT_4O_LATEST;
 
+// Reasoning models (the o-series and the GPT-5 reasoning family) only support the
+// default sampling `temperature` (1.0); supplying any other value results in a 400
+// error. `gpt-5-chat-latest` is a non-reasoning chat model and is intentionally
+// excluded, as it does honour a custom temperature.
+isolated function isReasoningModel(OPEN_AI_MODEL_NAMES model) returns boolean => model is O1|O1_2024_12_17
+    |O1_PRO|O1_PRO_2025_03_19|GPT_5|GPT_5_2025_08_07|GPT_5_MINI|GPT_5_MINI_2025_08_07|GPT_5_NANO|GPT_5_NANO_2025_08_07;
+
 isolated function constructReActPrompt(ToolInfo toolInfo, string instructions) returns string =>
 string `Respond to the human as helpfully and accurately as possible.
 You have access to the following tools:

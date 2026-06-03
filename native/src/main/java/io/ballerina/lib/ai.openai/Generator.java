@@ -34,6 +34,8 @@ public class Generator {
         return env.getRuntime().callFunction(
                 new Module("ballerinax", "ai.openai", "1"), "generateLlmResponse", null,
                 modelProvider.get(StringUtils.fromString("llmClient")),
-                modelProvider.get(StringUtils.fromString("modelType")), prompt, expectedResponseTypedesc);
+                modelProvider.get(StringUtils.fromString("modelType")),
+                modelProvider.get(StringUtils.fromString("temperature")),
+                prompt, expectedResponseTypedesc);
     }
 }

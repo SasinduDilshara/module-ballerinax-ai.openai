@@ -92,7 +92,10 @@ public isolated distinct client class ModelProvider {
         if stop is string {
             span.addStopSequence(stop);
         }
-        span.addTemperature(self.temperature);
+        boolean isReasoning = isReasoningModel(self.modelType);
+        if !isReasoning {
+            span.addTemperature(self.temperature);
+        }
         json|ai:Error inputMessage = convertMessageToJson(messages);
         if inputMessage is json {
             span.addInputMessages(inputMessage);
@@ -100,11 +103,16 @@ public isolated distinct client class ModelProvider {
 
         chat:CreateChatCompletionRequest request = {
             max_completion_tokens: self.maxTokens,
-            temperature: self.temperature,
             stop,
             model: self.modelType,
             messages: check self.prepareCompletionRequestMessages(messages, tools)
         };
+        // GPT-5/o-series reasoning models reject a non-default `temperature`; omit the
+        // override for them so the connector default (1.0) applies, and keep the
+        // configured temperature for all other models.
+        if !isReasoning {
+            request.temperature = self.temperature;
+        }
         boolean supportsToolCalls = isToolCallSupported(self.modelType);
         if supportsToolCalls && tools.length() > 0 {
             request.functions = tools;
